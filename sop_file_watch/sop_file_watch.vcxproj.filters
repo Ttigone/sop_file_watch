@@ -1,0 +1,87 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>qml;cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hh;hpp;hxx;hm;inl;inc;xsd</Extensions>
+    </Filter>
+    <Filter Include="Resource Files">
+      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
+      <Extensions>qrc;rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
+    </Filter>
+    <Filter Include="Form Files">
+      <UniqueIdentifier>{99349809-55BA-4b9d-BF79-8FDBB0286EB3}</UniqueIdentifier>
+      <Extensions>ui</Extensions>
+    </Filter>
+    <Filter Include="Translation Files">
+      <UniqueIdentifier>{639EADAA-A684-42e4-A9AD-28FC9BCB8F7C}</UniqueIdentifier>
+      <Extensions>ts</Extensions>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <QtRcc Include="sop_file_watch.qrc">
+      <Filter>Resource Files</Filter>
+    </QtRcc>
+    <QtUic Include="sop_file_watch.ui">
+      <Filter>Form Files</Filter>
+    </QtUic>
+    <QtMoc Include="sop_file_watch.h">
+      <Filter>Header Files</Filter>
+    </QtMoc>
+    <ClCompile Include="sop_file_watch.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ResourceCompile Include="$pro_name$.rc">
+    </ResourceCompile>
+    <None Include="$pro_name$.ico">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="$pro_name$.def">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="sop_file_watch.ico">
+      <Filter>Resource Files</Filter>
+    </None>
+    <ResourceCompile Include="sop_file_watch.rc">
+      <Filter>Resource Files</Filter>
+    </ResourceCompile>
+    <ClInclude Include="stdafx.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClCompile Include="stdafx.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <!-- FileWatcher -->
+    <QtMoc Include="file_watcher.h">
+      <Filter>Header Files</Filter>
+    </QtMoc>
+    <ClCompile Include="file_watcher.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <!-- XLS to PDF converter -->
+    <ClInclude Include="xls_to_pdf_converter.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClCompile Include="xls_to_pdf_converter.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <!-- PDF convert background worker -->
+    <QtMoc Include="pdf_convert_worker.h">
+      <Filter>Header Files</Filter>
+    </QtMoc>
+    <ClCompile Include="pdf_convert_worker.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <!-- File name helper -->
+    <ClInclude Include="file_name_helper.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClCompile Include="file_name_helper.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+  </ItemGroup>
+</Project>

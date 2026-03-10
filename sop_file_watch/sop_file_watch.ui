@@ -1,0 +1,254 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<UI version="4.0">
+ <class>SopFileWatchClass</class>
+ <widget class="QMainWindow" name="SopFileWatchClass">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>1000</width>
+    <height>660</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>SOP 文件监控工具</string>
+  </property>
+  <widget class="QWidget" name="centralWidget">
+   <layout class="QVBoxLayout" name="mainLayout">
+    <property name="spacing">
+     <number>8</number>
+    </property>
+    <property name="margin">
+     <number>10</number>
+    </property>
+    <!-- ===== 监控文件夹行 ===== -->
+    <item>
+     <layout class="QHBoxLayout" name="watchDirLayout">
+      <item>
+       <widget class="QLabel" name="labelWatchDir">
+        <property name="text">
+         <string>监控文件夹：</string>
+        </property>
+        <property name="minimumWidth">
+         <number>90</number>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QLineEdit" name="edit_watch_dir">
+        <property name="placeholderText">
+         <string>请选择或输入要监控的 XLS 文件夹路径…</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QPushButton" name="btn_browse_watch_dir">
+        <property name="text">
+         <string>浏览…</string>
+        </property>
+        <property name="minimumWidth">
+         <number>70</number>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QPushButton" name="btn_start_watch">
+        <property name="text">
+         <string>开始监控</string>
+        </property>
+        <property name="minimumWidth">
+         <number>80</number>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QPushButton" name="btn_stop_watch">
+        <property name="text">
+         <string>停止监控</string>
+        </property>
+        <property name="minimumWidth">
+         <number>80</number>
+        </property>
+        <property name="enabled">
+         <bool>false</bool>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </item>
+    <!-- ===== 输出文件夹行 ===== -->
+    <item>
+     <layout class="QHBoxLayout" name="outputDirLayout">
+      <item>
+       <widget class="QLabel" name="labelOutputDir">
+        <property name="text">
+         <string>PDF 输出目录：</string>
+        </property>
+        <property name="minimumWidth">
+         <number>90</number>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QLineEdit" name="edit_output_dir">
+        <property name="placeholderText">
+         <string>请选择或输入 PDF 文件输出目录…</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QPushButton" name="btn_browse_output_dir">
+        <property name="text">
+         <string>浏览…</string>
+        </property>
+        <property name="minimumWidth">
+         <number>70</number>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QPushButton" name="btn_generate_all">
+        <property name="text">
+         <string>全部生成 PDF</string>
+        </property>
+        <property name="minimumWidth">
+         <number>100</number>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </item>
+    <!-- ===== 文件列表 ===== -->
+    <item>
+     <widget class="QTableWidget" name="table_files">
+      <property name="selectionBehavior">
+       <enum>QAbstractItemView::SelectRows</enum>
+      </property>
+      <property name="alternatingRowColors">
+       <bool>true</bool>
+      </property>
+      <property name="editTriggers">
+       <set>QAbstractItemView::NoEditTriggers</set>
+      </property>
+      <property name="sortingEnabled">
+       <bool>true</bool>
+      </property>
+      <column>
+       <property name="text">
+        <string>文件名</string>
+       </property>
+      </column>
+      <column>
+       <property name="text">
+        <string>相对路径</string>
+       </property>
+      </column>
+      <column>
+       <property name="text">
+        <string>是否被修改</string>
+       </property>
+      </column>
+      <column>
+       <property name="text">
+        <string>上次修改时间</string>
+       </property>
+      </column>
+      <column>
+       <property name="text">
+        <string>PDF 状态</string>
+       </property>
+      </column>
+      <column>
+       <property name="text">
+        <string>输出 PDF 名</string>
+       </property>
+      </column>
+      <column>
+       <property name="text">
+        <string>操作</string>
+       </property>
+      </column>
+     </widget>
+    </item>
+    <!-- ===== 状态栏 ===== -->
+    <item>
+     <layout class="QHBoxLayout" name="statusLayout">
+      <item>
+       <widget class="QLabel" name="label_status">
+        <property name="text">
+         <string>就绪</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QProgressBar" name="progress_bar">
+        <property name="visible">
+         <bool>false</bool>
+        </property>
+        <property name="minimum">
+         <number>0</number>
+        </property>
+        <property name="maximum">
+         <number>100</number>
+        </property>
+        <property name="value">
+         <number>0</number>
+        </property>
+        <property name="maximumWidth">
+         <number>280</number>
+        </property>
+        <property name="textVisible">
+         <bool>true</bool>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QPushButton" name="btn_cancel_convert">
+        <property name="text">
+         <string>取消</string>
+        </property>
+        <property name="visible">
+         <bool>false</bool>
+        </property>
+        <property name="maximumWidth">
+         <number>60</number>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <spacer name="statusSpacer">
+        <property name="orientation">
+         <enum>Qt::Horizontal</enum>
+        </property>
+       </spacer>
+      </item>
+      <item>
+       <widget class="QLabel" name="label_file_count">
+        <property name="text">
+         <string>文件数：0</string>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </item>
+   </layout>
+  </widget>
+  <widget class="QMenuBar" name="menuBar">
+   <property name="geometry">
+    <rect>
+     <x>0</x>
+     <y>0</y>
+     <width>1000</width>
+     <height>22</height>
+    </rect>
+   </property>
+  </widget>
+  <widget class="QStatusBar" name="statusBar"/>
+ </widget>
+ <layoutDefault spacing="6" margin="11"/>
+ <pixmapfunction/>
+ <resources>
+  <include location="sop_file_watch.qrc"/>
+ </resources>
+ <connections/>
+</UI>
