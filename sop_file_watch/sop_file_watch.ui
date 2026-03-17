@@ -153,6 +153,11 @@
         <string>上次修改时间</string>
        </property>
       </column>
+    <column>
+     <property name="text">
+      <string>上次生成时间</string>
+     </property>
+    </column>
       <column>
        <property name="text">
         <string>PDF 状态</string>

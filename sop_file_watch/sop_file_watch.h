@@ -8,8 +8,10 @@
 
 #include <QMainWindow>
 #include <QMenu>
+#include <QSettings>
 #include <QSystemTrayIcon>
 #include <QThread>
+#include <QDateTime>
 
 #include "file_watcher.h"
 #include "pdf_convert_worker.h"
@@ -25,6 +27,7 @@ enum TableColumn {
   kColRelPath,
   kColChanged,
   kColLastModified,
+  kColLastGenerated,
   kColPdfStatus,
   kColPdfOutputName,
   kColAction,
@@ -103,6 +106,11 @@ class SopFileWatch : public QMainWindow {
   void LoadSettings();
   void SaveSettings();
 
+  // Last-generated time persistence for each file (stored in INI).
+  void LoadLastGenerated(QSettings& settings);
+  QDateTime LastGeneratedFor(const QString& abs_path) const;
+  void UpdateLastGenerated(const QString& abs_path, const QDateTime& when);
+
   // Start a conversion worker for any paths queued in pending_auto_convert_.
   // Called from OnConvertFinished after each worker completes.
   void DrainPendingAutoConvert();
@@ -122,5 +130,8 @@ class SopFileWatch : public QMainWindow {
 
   // Paths that changed while a conversion was running; drained after it ends.
   QSet<QString> pending_auto_convert_;
+
+  // Map abs_path -> last generated time (persisted in INI).
+  QMap<QString, QDateTime> last_generated_map_;
 };
 

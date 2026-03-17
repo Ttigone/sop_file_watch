@@ -14,6 +14,7 @@
 #include <QColor>
 #include <QDateTime>
 #include <QDir>
+#include <QByteArray>
 #include <QEvent>
 #include <QFileDialog>
 #include <QHBoxLayout>
@@ -49,6 +50,8 @@ SopFileWatch::SopFileWatch(QWidget* parent)
       kColChanged, QHeaderView::ResizeToContents);
   ui_->table_files->horizontalHeader()->setSectionResizeMode(
       kColLastModified, QHeaderView::ResizeToContents);
+    ui_->table_files->horizontalHeader()->setSectionResizeMode(
+      kColLastGenerated, QHeaderView::ResizeToContents);
   ui_->table_files->horizontalHeader()->setSectionResizeMode(
       kColPdfStatus, QHeaderView::ResizeToContents);
   ui_->table_files->horizontalHeader()->setSectionResizeMode(
@@ -197,6 +200,45 @@ void SopFileWatch::OnGenerateAll() {
 void SopFileWatch::OnScanCompleted(int file_count) {
   RefreshTable();
   ui_->label_file_count->setText(tr("文件数：") + QString::number(file_count));
+
+  // Auto-regenerate files whose last-generated time is older than modified.
+  QString out_dir = ui_->edit_output_dir->text().trimmed();
+  const bool can_convert = !out_dir.isEmpty();
+  if (can_convert) QDir().mkpath(out_dir);
+
+  QVector<sop::PdfConvertWorker::Task> tasks;
+  const auto& entries = watcher_->entries();
+  for (const auto& e : entries) {
+    const QDateTime last_generated = LastGeneratedFor(e.abs_path);
+    if (!last_generated.isValid()) continue;
+    if (last_generated < e.last_modified) {
+      // Mark status as "待重新生成" in the table.
+      int row = path_to_row_.value(e.abs_path, -1);
+      if (row >= 0) {
+        auto* status_item = ui_->table_files->item(row, kColPdfStatus);
+        if (!status_item) {
+          status_item = new QTableWidgetItem();
+          ui_->table_files->setItem(row, kColPdfStatus, status_item);
+        }
+        status_item->setText(tr("待重新生成"));
+        status_item->setForeground(QColor(Qt::darkYellow));
+      }
+
+      if (!can_convert) continue;
+
+      if (is_converting_) {
+        pending_auto_convert_.insert(e.abs_path);
+      } else {
+        tasks.append({e.abs_path,
+                      out_dir + QLatin1Char('/') + e.pdf_output_name,
+                      e.file_name});
+      }
+    }
+  }
+
+  if (!is_converting_ && !tasks.isEmpty()) {
+    StartConvertWorker(std::move(tasks));
+  }
 }
 
 void SopFileWatch::OnFileChanged(const QString& abs_path) {
@@ -288,6 +330,14 @@ void SopFileWatch::OnConvertTaskDone(const QString& abs_path, bool success,
   if (success) {
     item->setText(tr("已生成"));
     item->setForeground(QColor(Qt::darkGreen));
+    const QDateTime now = QDateTime::currentDateTime();
+    UpdateLastGenerated(abs_path, now);
+    auto* gen_item = ui_->table_files->item(row, kColLastGenerated);
+    if (!gen_item) {
+      gen_item = new QTableWidgetItem();
+      ui_->table_files->setItem(row, kColLastGenerated, gen_item);
+    }
+    gen_item->setText(now.toString(QStringLiteral("yyyy-MM-dd HH:mm:ss")));
   } else {
     item->setText(tr("失败"));
     item->setForeground(QColor(Qt::red));
@@ -378,6 +428,14 @@ void SopFileWatch::RefreshTable() {
         i, kColLastModified,
         new QTableWidgetItem(
             e.last_modified.toString(QStringLiteral("yyyy-MM-dd HH:mm:ss"))));
+    const QDateTime last_generated = LastGeneratedFor(e.abs_path);
+    ui_->table_files->setItem(
+      i, kColLastGenerated,
+      new QTableWidgetItem(
+        last_generated.isValid()
+          ? last_generated.toString(
+            QStringLiteral("yyyy-MM-dd HH:mm:ss"))
+          : QStringLiteral("-")));
     ui_->table_files->setItem(
         i, kColPdfOutputName,
         new QTableWidgetItem(e.pdf_output_name));
@@ -584,6 +642,12 @@ static QString SettingsPath() {
          QStringLiteral("/sop_watch_config.ini");
 }
 
+static QString EncodeIniKey(const QString& abs_path) {
+  return QString::fromUtf8(
+      abs_path.toUtf8().toBase64(QByteArray::Base64UrlEncoding |
+                                 QByteArray::OmitTrailingEquals));
+}
+
 void SopFileWatch::LoadSettings() {
   QSettings s(SettingsPath(), QSettings::IniFormat);
   s.setIniCodec("UTF-8");  // Support Chinese directory paths.
@@ -593,6 +657,8 @@ void SopFileWatch::LoadSettings() {
 
   if (!watch_dir.isEmpty())  ui_->edit_watch_dir->setText(watch_dir);
   if (!output_dir.isEmpty()) ui_->edit_output_dir->setText(output_dir);
+
+  LoadLastGenerated(s);
 
   qDebug() << "[Settings] Loaded from" << SettingsPath();
 }
@@ -608,4 +674,41 @@ void SopFileWatch::SaveSettings() {
   s.sync();
 
   qDebug() << "[Settings] Saved to" << SettingsPath();
+}
+
+void SopFileWatch::LoadLastGenerated(QSettings& settings) {
+  last_generated_map_.clear();
+  settings.beginGroup(QStringLiteral("last_generated"));
+  const auto keys = settings.childKeys();
+  for (const auto& key : keys) {
+    const QString iso = settings.value(key).toString();
+    QDateTime dt = QDateTime::fromString(iso, Qt::ISODate);
+    if (!dt.isValid()) continue;
+
+    const QByteArray decoded = QByteArray::fromBase64(
+        key.toUtf8(), QByteArray::Base64UrlEncoding);
+    const QString abs_path = QString::fromUtf8(decoded);
+    if (abs_path.isEmpty()) continue;
+
+    last_generated_map_.insert(abs_path, dt);
+  }
+  settings.endGroup();
+}
+
+QDateTime SopFileWatch::LastGeneratedFor(const QString& abs_path) const {
+  return last_generated_map_.value(abs_path);
+}
+
+void SopFileWatch::UpdateLastGenerated(const QString& abs_path,
+                                       const QDateTime& when) {
+  if (abs_path.isEmpty() || !when.isValid()) return;
+
+  last_generated_map_.insert(abs_path, when);
+
+  QSettings s(SettingsPath(), QSettings::IniFormat);
+  s.setIniCodec("UTF-8");
+  s.beginGroup(QStringLiteral("last_generated"));
+  s.setValue(EncodeIniKey(abs_path), when.toString(Qt::ISODate));
+  s.endGroup();
+  s.sync();
 }
